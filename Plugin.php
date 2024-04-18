@@ -8,7 +8,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  *
  * @package Konami
  * @author 小A
- * @version 1.0.0
+ * @version 1.0.1
  * @link http://xiaoa.me
  */
 class Konami_Plugin implements Typecho_Plugin_Interface
@@ -18,6 +18,7 @@ class Konami_Plugin implements Typecho_Plugin_Interface
      */
     public static function activate()
     {
+        Typecho_Plugin::factory('Widget_Archive')->header = array(__CLASS__, 'header');
         Typecho_Plugin::factory('Widget_Archive')->footer = array(__CLASS__, 'footer');
     }
 
@@ -45,14 +46,23 @@ class Konami_Plugin implements Typecho_Plugin_Interface
     }
 
     /**
+     *为header添加js文件
+     *@return void
+     */
+    public static function header() {
+        $jqueryUrl = Helper::options()->pluginUrl . '/Konami/jquery.min.js';
+        //写入JS
+        echo <<<CODE
+<script type="text/javascript" src="{$jqueryUrl}"></script>
+CODE;
+    }
+
+    /**
      *为footer添加js文件
      *@return void
      */
     public static function footer() {
-        $jqueryUrl = Helper::options()->pluginUrl . '/Konami/jquery.min.js';
-        //写入JS
         echo <<<CODE
-        <script type="text/javascript" src="{$jqueryUrl}"></script>
 <script type="text/javascript">
    $(document).ready(function() {
 	//Konami Code
