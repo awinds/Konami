@@ -1,4 +1,8 @@
 <?php
+
+use Typecho\Widget\Helper\Form\Element\Textarea;
+use Widget\Options;
+
 if (!defined('__TYPECHO_ROOT_DIR__')) {
     exit;
 }
@@ -8,7 +12,7 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
  *
  * @package Konami
  * @author 小A
- * @version 1.0.1
+ * @version 2.0
  * @link http://xiaoa.me
  */
 class Konami_Plugin implements Typecho_Plugin_Interface
@@ -34,7 +38,18 @@ class Konami_Plugin implements Typecho_Plugin_Interface
      *
      * @param Form $form 配置面板
      */
-    public static function config(Typecho_Widget_Helper_Form $form){}
+    public static function config(Typecho_Widget_Helper_Form $form){
+        /* 自定义彩蛋内容 */
+        $html = '<div id="konami" style="display:none;position:fixed;height:100%;width:100%;z-index:9999;top:0;left:0;background:rgba(00, 00, 00, 0.8);">';
+        $html .= '<span style="position: absolute;left: 50%;transform: translate(-50%,-50%);top: 50%; color: #FFFFFF;font-size: 18em;">KONAMI</span>';
+        $html .=  '</div>';
+        $htmlcontent= new Textarea('KonamiHtml', null, $html, _t('自定义彩蛋显示内容html'), _t('彩蛋显示html的效果，会添加到body'));
+        $form->addInput($htmlcontent->multiMode());
+        /* 自定义彩蛋脚本 */
+        $js = '$("#konami").fadeIn(1500).fadeOut(1500);';
+        $jscontent= new Textarea('KonamiJS', null, $js, _t('自定义彩蛋执行脚本'), _t('正确的可执行脚本，可使用JQuery'));
+        $form->addInput($jscontent->multiMode());
+    }
 
     /**
      * 个人用户的配置面板
@@ -62,20 +77,22 @@ CODE;
      *@return void
      */
     public static function footer() {
+        // 获取系统配置选项
+        $options = Options::alloc();
+        $KonamiConfig = $options->plugin('Konami');
+        $html = $KonamiConfig->KonamiHtml;
+        $js = $KonamiConfig->KonamiJS;
         echo <<<CODE
 <script type="text/javascript">
    $(document).ready(function() {
 	//Konami Code
     var k = [];
-    var html = '<div id="konami" style="display:none;position:fixed;height:100%;width:100%;z-index:9999;top:0;left:0;background:rgba(00, 00, 00, 0.8);">';
-    html += '<span style="position: absolute;left: 50%;transform: translate(-50%,-50%);top: 50%; color: #FFFFFF;font-size: 18em;">KONAMI</span>';
-    html +=  '</div>';
-    $("body").append(html);
+    $("body").append('$html');
     $(document).keydown(function(e) {
         e = e || window.event;
         k.push(e.keyCode);
         if (k.toString().indexOf("38,38,40,40,37,39,37,39,66,65") >= 0) {
-            $("#konami").fadeIn(1500).fadeOut(1500);
+            $js;
             k = [];
         }
         else if (k.length == 10) {
